@@ -1,0 +1,56 @@
+pipeline {
+   
+    agent { docker { image 'node:18-alpine' } }
+
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code...'
+                // This command checks out the code from your repository
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing npm dependencies...'
+                // Use 'npm ci' for a clean, consistent install in CI
+                sh 'npm ci'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                echo 'Running tests...'
+                // This runs the "test" script defined in your package.json
+                sh 'npm test'
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                echo 'Building the project...'
+                // This runs the "build" script from your package.json
+                sh 'npm run build'
+            }
+        }
+    }
+
+
+    post {
+        always {
+            echo 'Pipeline finished.'
+            // Clean up the workspace after the build
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline succeeded!'
+            // You could add a Slack or email notification here
+        }
+        failure {
+            echo 'Pipeline failed.'
+            // You could add a failure notification here
+        }
+    }
+}
